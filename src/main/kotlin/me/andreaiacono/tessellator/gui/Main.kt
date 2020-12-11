@@ -42,6 +42,10 @@ class Main(title: String) : JFrame(), ActionListener {
         repaint()
     }
 
+    fun setDrawGrid(isSet: Boolean) {
+        canvasPanel.setDrawGrid(isSet)
+    }
+
 }
 
 private fun createAndShowGUI() {

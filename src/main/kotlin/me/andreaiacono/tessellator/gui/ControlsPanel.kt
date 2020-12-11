@@ -31,5 +31,14 @@ class ControlsPanel(private val main: Main) : JPanel(), ActionListener, ChangeLi
             }
         }
         add(resetButton)
+
+        val drawGridCheckbox = JCheckBox("Draw Grid", true)
+        drawGridCheckbox.addActionListener {
+            main.setDrawGrid((it.source as JCheckBox).isSelected)
+        }
+        sl.putConstraint(SpringLayout.WEST, drawGridCheckbox, 5, SpringLayout.WEST, this)
+        sl.putConstraint(SpringLayout.EAST, drawGridCheckbox, -5, SpringLayout.EAST, this)
+        sl.putConstraint(SpringLayout.NORTH, drawGridCheckbox, 5, SpringLayout.NORTH, this)
+        add(drawGridCheckbox)
     }
 }

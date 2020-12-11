@@ -16,6 +16,7 @@ import java.awt.image.BufferedImage.TYPE_INT_RGB
 
 class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotionListener {
 
+    private var drawGrid: Boolean = true
     private var isOnPoint: Boolean = false
     private var px: Double = 0.0
     private var py: Double = 0.0
@@ -56,9 +57,11 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         val boxHeight = width
 
         // draws the original cell
-        g.stroke = BasicStroke(1.0f)
-        g.color = Color.LIGHT_GRAY
-        g.drawRect(left + 1, top + 1, width, boxHeight)
+        if (drawGrid) {
+            g.stroke = BasicStroke(1.0f)
+            g.color = Color.LIGHT_GRAY
+            g.drawRect(left + 1, top + 1, width, boxHeight)
+        }
 
         // draws the cell
         g.stroke = BasicStroke(4.0f)
@@ -163,5 +166,10 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
             isOnPoint = false
         }
 
+    }
+
+    fun setDrawGrid(value: Boolean) {
+        drawGrid = value;
+        repaint()
     }
 }
