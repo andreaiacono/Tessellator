@@ -2,26 +2,32 @@ package me.andreaiacono.tessellator.gui
 
 import me.andreaiacono.tessellator.core.*
 import me.andreaiacono.tessellator.core.Point
+import me.andreaiacono.tessellator.core.PointType.HORIZONTAL
+import me.andreaiacono.tessellator.core.PointType.VERTICAL
 import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.border.BevelBorder
 
 import java.awt.*
+import java.awt.Color.RED
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionListener
 import java.awt.event.MouseListener
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_RGB
+import kotlin.math.min
 
 
 class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotionListener {
 
+    private var currentX: Int = 0
+    private var currentY: Int = 0
     private var drawGrid: Boolean = true
-    private var isOnPoint: Boolean = false
-    private var px: Double = 0.0
-    private var py: Double = 0.0
+    private var isOnDrawing: Boolean = false
     private val n = 5
-    private var movingPoint: Point? = null
+    private var changingPoint: Point? = null
+    private var hoveringPoint: Point? = null
+    private var hoveringPixel: Point? = null
     var cell = Cell()
     private val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
 
@@ -73,103 +79,138 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
             val current = scaledHorizontal[i]
             g.drawLine(
                 left + previous.x,
-                boxHeight + top - previous.y,
+                top - previous.y,
                 left + current.x,
-                boxHeight + top - current.y
+                top - current.y
             )
         }
         for (i in 1 until scaledVertical.size) {
             val previous = scaledVertical[i - 1]
             val current = scaledVertical[i]
             g.drawLine(
-                width + left - previous.x,
+                left - previous.x,
                 top + previous.y,
-                width + left - current.x,
+                left - current.x,
                 top + current.y
             )
+        }
+        if (isOnDrawing) {
+            g.color = RED
+            val rectSize = 5
+            val size = width
+            val px = (currentX % size) / size.toDouble()
+            val py = 1.0 - (currentY % size) / size.toDouble()
+            val scaledPoint = Point(px, py).scale(width, boxHeight)
+            g.fillRect(left + scaledPoint.x - 2, top - scaledPoint.y - 2, rectSize, rectSize)
+        }
+
+        if (hoveringPoint != null) {
+            val scaledPoint = hoveringPoint!!.scale(width, boxHeight)
+            g.color = Color.GREEN
+            g.stroke = BasicStroke(2.0f)
+            val circleSize = min(width / 5, 20)
+            val halfCircleSize = circleSize / 2
+            g.drawArc(left + scaledPoint.x - halfCircleSize, top - scaledPoint.y - halfCircleSize, circleSize, circleSize, 0, 360)
         }
     }
 
     override fun mouseClicked(e: MouseEvent?) {
     }
 
-    override fun mousePressed(e: MouseEvent?) {
-        val x = e!!.x
-        val y = e.y
-        val size = width / n
-        px = (x % size) / size.toDouble()
-        py = 1.0 - (y % size) / size.toDouble()
-
-        if (isOnPoint) {
-            val existingPoint = cell.findExistingPoint(Point(px, py))
-            if (existingPoint != null) {
-                existingPoint.isMoving = true
-                movingPoint = existingPoint
-            } else {
-                movingPoint = if (px > py) {
-                    cell.addHorizontalPoint(Point(px, py, PointType.HORIZONTAL, true))
-                } else {
-                    println("adding vertical")
-                    cell.addVerticalPoint(Point(px, 1.0 - py, PointType.VERTICAL))
-                }
-            }
-        }
-    }
-
     override fun mouseReleased(e: MouseEvent?) {
-        if (movingPoint != null) {
-            cell.fixPoint(movingPoint!!)
-            movingPoint = null
+        if (changingPoint != null) {
+            cell.fixPoint(changingPoint!!)
+            changingPoint = null
             repaint()
         }
     }
 
-    override fun mouseEntered(e: MouseEvent?) {
+    override fun mousePressed(e: MouseEvent?) {
+        val x = e!!.x
+        val y = e.y
+        val size = width / n
+        val px = (x % size) / size.toDouble()
+        val py = 1.0 - (y % size) / size.toDouble()
+
+        if (isOnDrawing) {
+            val existingPoint = cell.findExistingPoint(Point(px, py), width)
+            if (existingPoint != null) {
+                changingPoint = existingPoint
+            } else {
+                changingPoint = hoveringPixel
+                if (changingPoint!!.pointType == HORIZONTAL) {
+                    cell.addHorizontalPoint(changingPoint!!)
+                } else {
+                    cell.addVerticalPoint(changingPoint!!)
+                }
+                changingPoint!!.isMoving = true
+            }
+            isOnDrawing = false
+        }
     }
 
-    override fun mouseExited(e: MouseEvent?) {
-    }
 
     override fun mouseDragged(e: MouseEvent?) {
         val x = e!!.x
         val y = e.y
         val size = width / n
-        if (movingPoint != null) {
-            if (movingPoint!!.pointType == PointType.HORIZONTAL) {
-                movingPoint!!.x = (x % size) / size.toDouble()
-                movingPoint!!.y = 1.0 - (y % size) / size.toDouble()
+        if (changingPoint != null) {
+            if (changingPoint!!.pointType == HORIZONTAL) {
+                changingPoint!!.x = (x % size) / size.toDouble()
+                changingPoint!!.y = 1.0 - (y % size) / size.toDouble()
             } else {
-                movingPoint!!.x = 1.0 - (x % size) / size.toDouble()
-                movingPoint!!.y = (y % size) / size.toDouble()
+                changingPoint!!.x = 1.0 - (x % size) / size.toDouble()
+                changingPoint!!.y = (y % size) / size.toDouble()
             }
             repaint()
         }
     }
 
     override fun mouseMoved(e: MouseEvent?) {
-        val x = e!!.x
-        val y = e.y
-        val color = Color(image.getRGB(x, y))
+        currentX = e!!.x
+        currentY = e.y
+        val color = Color(image.getRGB(currentX, currentY))
         val size = width / n
-        if (movingPoint != null) {
-            px = (x % size) / size.toDouble()
-            py = (y % size) / size.toDouble()
-            movingPoint!!.x = px
-            movingPoint!!.y = py
-            repaint()
-        }
-        if (color == Color.BLACK) {
-            cursor = Cursor(Cursor.HAND_CURSOR)
-            isOnPoint = true
-        } else {
-            cursor = Cursor(Cursor.DEFAULT_CURSOR)
-            isOnPoint = false
-        }
+        val px = 1.0 - (currentX % size) / size.toDouble()
+        val py = (currentY % size) / size.toDouble()
 
+        if (changingPoint != null) {
+            changingPoint!!.x = px
+            changingPoint!!.y = py
+        }
+        else {
+            val existingPoint = cell.findExistingPoint(Point(px, py), width)
+            if (existingPoint != null) {
+                hoveringPoint = existingPoint
+                cursor = Cursor(Cursor.MOVE_CURSOR)
+                isOnDrawing = true
+            } else {
+                hoveringPoint = null
+                if (color == Color.BLACK) {
+                    cursor = Cursor(Cursor.HAND_CURSOR)
+                    val pointType = if (currentY.rem(width) < currentX.rem(width)) VERTICAL else HORIZONTAL
+                    hoveringPixel = Point(px, py, pointType);
+                    println(hoveringPixel!!.pointType)
+                    isOnDrawing = true
+                } else {
+                    cursor = Cursor(Cursor.DEFAULT_CURSOR)
+                    isOnDrawing = false
+                }
+            }
+        }
+        repaint()
     }
 
     fun setDrawGrid(value: Boolean) {
         drawGrid = value;
         repaint()
+    }
+
+
+
+    override fun mouseEntered(e: MouseEvent?) {
+    }
+
+    override fun mouseExited(e: MouseEvent?) {
     }
 }

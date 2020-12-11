@@ -7,18 +7,18 @@ import kotlin.math.abs
 
 class Cell {
 
-    private val EPSILON: Double = 0.001
     var horizontal = mutableListOf(Point(0.0, 0.0, HORIZONTAL), Point(1.0, 0.0, HORIZONTAL))
     var vertical = mutableListOf(Point(0.0, 0.0, VERTICAL), Point(0.0, 1.0, VERTICAL))
 
-    fun findExistingPoint(searchedPoint: Point): Point? {
-        horizontal.filter { (abs(it.x - searchedPoint.x) < EPSILON && abs(it.y - searchedPoint.y) < EPSILON) }
+    fun findExistingPoint(searchedPoint: Point, size: Int): Point? {
+        val epsilon = 5 / size.toDouble()
+        horizontal.filter { (abs(it.x - searchedPoint.x) < epsilon && abs(it.y - searchedPoint.y) < epsilon) }
             .firstOrNull()
             ?.let {
                 return it
             }
 
-        vertical.filter { (abs(it.x - searchedPoint.x) < EPSILON && abs(it.y - searchedPoint.y) < EPSILON) }
+        vertical.filter { (abs(it.x - searchedPoint.x) < epsilon && abs(it.y - searchedPoint.y) < epsilon) }
             .firstOrNull()
             ?.let {
                 return it
@@ -28,39 +28,20 @@ class Cell {
     }
 
 
-    fun addHorizontalPoint(newPoint: Point): Point {
-        horizontal.filter { (abs(it.x - newPoint.x) < EPSILON && abs(it.y - newPoint.y) < EPSILON) }
-            .firstOrNull()
-            .let {
-                if (it == null) {
-                    horizontal.add(newPoint)
-                    horizontal.sortWith(Comparator.comparingDouble { point -> point.x })
-                    return newPoint
-                } else {
-                    it.isMoving = true
-                    return it
-                }
-            }
+    fun addHorizontalPoint(newPoint: Point) {
+        horizontal.add(newPoint)
+        horizontal.sortWith(Comparator.comparingDouble { point -> point.x })
     }
 
-    fun addVerticalPoint(newPoint: Point): Point {
-        vertical.filter { (abs(it.x - newPoint.x) < EPSILON && abs(it.y - newPoint.y) < EPSILON) }
-            .firstOrNull()
-            .let {
-                if (it == null) {
-                    vertical.add(newPoint)
-                    vertical.sortWith(Comparator.comparingDouble { point -> point.y })
-                    return newPoint
-                } else {
-                    it.isMoving = true
-                    return it
-                }
-            }
+    fun addVerticalPoint(newPoint: Point) {
+        vertical.add(newPoint)
+        vertical.sortWith(Comparator.comparingDouble { point -> point.y })
     }
 
     fun fixPoint(movingPoint: Point) {
         movingPoint.isMoving = false
     }
+
 }
 
 data class ScaledPoint(val x: Int, val y: Int)
