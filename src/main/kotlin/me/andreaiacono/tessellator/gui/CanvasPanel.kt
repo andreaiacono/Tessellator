@@ -1,13 +1,11 @@
 package me.andreaiacono.tessellator.gui
 
+import me.andreaiacono.tessellator.core.*
+import me.andreaiacono.tessellator.core.Point
 import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.border.BevelBorder
 
-import me.andreaiacono.tessellator.core.Cell
-import me.andreaiacono.tessellator.core.Point
-import me.andreaiacono.tessellator.core.ScaledPoint
-import me.andreaiacono.tessellator.core.scale
 import java.awt.*
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionListener
@@ -18,12 +16,12 @@ import java.awt.image.BufferedImage.TYPE_INT_RGB
 
 class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotionListener {
 
+    private var isOnPoint: Boolean = false
     private var px: Double = 0.0
     private var py: Double = 0.0
     private val n = 5
     private var movingPoint: Point? = null
     var cell = Cell()
-    private var isInserting: Boolean = false
     private val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
 
     init {
@@ -93,23 +91,34 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     }
 
     override fun mousePressed(e: MouseEvent?) {
-        isInserting = true
         val x = e!!.x
         val y = e.y
         val size = width / n
         px = (x % size) / size.toDouble()
         py = 1.0 - (y % size) / size.toDouble()
-        if (px > py) {
-            movingPoint = cell.addHorizontalPoint(Point(px, py, true))
-        } else {
-            movingPoint = cell.addVerticalPoint(Point(px, py, true))
+
+        if (isOnPoint) {
+            val existingPoint = cell.findExistingPoint(Point(px, py))
+            if (existingPoint != null) {
+                existingPoint.isMoving = true
+                movingPoint = existingPoint
+            } else {
+                movingPoint = if (px > py) {
+                    cell.addHorizontalPoint(Point(px, py, PointType.HORIZONTAL, true))
+                } else {
+                    println("adding vertical")
+                    cell.addVerticalPoint(Point(px, 1.0 - py, PointType.VERTICAL))
+                }
+            }
         }
     }
 
     override fun mouseReleased(e: MouseEvent?) {
-        cell.fixPoint(movingPoint!!)
-        movingPoint = null
-        repaint()
+        if (movingPoint != null) {
+            cell.fixPoint(movingPoint!!)
+            movingPoint = null
+            repaint()
+        }
     }
 
     override fun mouseEntered(e: MouseEvent?) {
@@ -123,8 +132,13 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         val y = e.y
         val size = width / n
         if (movingPoint != null) {
-            movingPoint!!.x = (x % size) / size.toDouble()
-            movingPoint!!.y = 1.0 - (y % size) / size.toDouble()
+            if (movingPoint!!.pointType == PointType.HORIZONTAL) {
+                movingPoint!!.x = (x % size) / size.toDouble()
+                movingPoint!!.y = 1.0 - (y % size) / size.toDouble()
+            } else {
+                movingPoint!!.x = 1.0 - (x % size) / size.toDouble()
+                movingPoint!!.y = (y % size) / size.toDouble()
+            }
             repaint()
         }
     }
@@ -143,8 +157,10 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         }
         if (color == Color.BLACK) {
             cursor = Cursor(Cursor.HAND_CURSOR)
+            isOnPoint = true
         } else {
             cursor = Cursor(Cursor.DEFAULT_CURSOR)
+            isOnPoint = false
         }
 
     }
