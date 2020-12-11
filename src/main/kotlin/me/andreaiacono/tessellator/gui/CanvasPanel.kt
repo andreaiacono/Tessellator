@@ -21,6 +21,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     private var px: Double = 0.0
     private var py: Double = 0.0
     private val n = 5
+    private var movingPoint: Point? = null
     val cell = Cell()
     private var isInserting: Boolean = false
     private val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
@@ -113,17 +114,13 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         val y = e.y
         val size = width / n
         px = (x % size) / size.toDouble()
-        py = (y % size) / size.toDouble()
-        println(Point(px, py))
+        py = 1.0 - (y % size) / size.toDouble()
+        movingPoint = cell.addHorizontalPoint(Point(px, py, true))
     }
 
     override fun mouseReleased(e: MouseEvent?) {
-        val x = e!!.x
-        val y = e.y
-        val size = width / n
-        px = (x % size) / size.toDouble()
-        py = (y % size) / size.toDouble()
-        cell.addHorizontalPoint(Point(px, py))
+        cell.fixPoint(movingPoint!!)
+        movingPoint = null
         repaint()
     }
 
@@ -134,17 +131,33 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     }
 
     override fun mouseDragged(e: MouseEvent?) {
+        val x = e!!.x
+        val y = e.y
+        val size = width / n
+        if (movingPoint != null) {
+            movingPoint!!.x =  (x % size) / size.toDouble()
+            movingPoint!!.y =  1.0 - (y % size) / size.toDouble()
+            repaint()
+        }
     }
 
     override fun mouseMoved(e: MouseEvent?) {
         val x = e!!.x
         val y = e.y
         val color = Color(image.getRGB(x, y))
-
+        val size = width / n
+        if (movingPoint != null) {
+            px = (x % size) / size.toDouble()
+            py = (y % size) / size.toDouble()
+            movingPoint!!.x = px
+            movingPoint!!.y = py
+            repaint()
+        }
         if (color == Color.BLACK) {
             cursor = Cursor(Cursor.HAND_CURSOR)
         } else {
             cursor = Cursor(Cursor.DEFAULT_CURSOR)
         }
+
     }
 }
