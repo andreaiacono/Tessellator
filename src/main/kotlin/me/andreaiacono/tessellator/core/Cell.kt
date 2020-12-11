@@ -19,21 +19,24 @@ class Cell {
                     return newPoint
                 } else {
                     it.isMoving = true
-                    println("FOUND")
                     return it
                 }
             }
     }
 
-    fun addVerticalPoint(newPoint: Point) {
-        if (vertical.contains(newPoint.copy(isMoving = false))) {
-            vertical.filter { abs(it.x - newPoint.x) < EPSILON && abs(it.y - newPoint.y) < EPSILON }
-                .firstOrNull()
-                ?.let { it.isMoving = true }
-        } else {
-            vertical.add(newPoint)
-            vertical.sortWith(Comparator.comparingDouble { point -> point.y })
-        }
+    fun addVerticalPoint(newPoint: Point) : Point {
+        vertical.filter { (abs(it.x - newPoint.x) < EPSILON && abs(it.y - newPoint.y) < EPSILON) }
+            .firstOrNull()
+            .let {
+                if (it == null) {
+                    vertical.add(newPoint)
+                    vertical.sortWith(Comparator.comparingDouble { point -> point.y })
+                    return newPoint
+                } else {
+                    it.isMoving = true
+                    return it
+                }
+            }
     }
 
     fun fixPoint(movingPoint: Point) {

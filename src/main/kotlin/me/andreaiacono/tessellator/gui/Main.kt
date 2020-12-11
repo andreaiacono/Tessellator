@@ -1,5 +1,6 @@
 package me.andreaiacono.tessellator.gui
 
+import me.andreaiacono.tessellator.core.Cell
 import java.awt.BorderLayout
 import java.awt.EventQueue
 import java.awt.event.ActionEvent
@@ -29,6 +30,10 @@ class Main(title: String) : JFrame(), ActionListener {
         isVisible = true
     }
 
+    fun resetCanvas() {
+        canvasPanel.cell = Cell()
+        repaint()
+    }
     fun getCanvasPanel(): CanvasPanel {
         return canvasPanel
     }

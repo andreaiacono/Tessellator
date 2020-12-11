@@ -22,38 +22,22 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     private var py: Double = 0.0
     private val n = 5
     private var movingPoint: Point? = null
-    val cell = Cell()
+    var cell = Cell()
     private var isInserting: Boolean = false
     private val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
+
     init {
         border = BorderFactory.createBevelBorder(BevelBorder.LOWERED)
         addMouseListener(this)
         addMouseMotionListener(this)
+    }
 
-//        {
-//
-//            override fun mouseDragged(e: MouseEvent?) {
-//                TODO("Not yet implemented")
-//            }
-//
-//            override fun mouseMoved(e: MouseEvent?) {
-//                val x = e!!.x
-//                val y = e.y
-//                println("$x $y ${size.width / 10} ${size.height / 10} ${x.rem(size.width / 10)} ${y.rem((size.height / 10))}")
-//                if (x.rem(size.width / 10) == 0 && y.rem((size.height / 10)) == 0) {
-//                    cursor = Cursor(Cursor.HAND_CURSOR)
-//                }
-//            }
-//        })
+    fun reset() {
+        cell = Cell()
     }
 
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
-
-//        cell.addHorizontalPoint(Point(0.5, 0.2))
-//        cell.addHorizontalPoint(Point(0.2, -0.4))
-//        cell.addVerticalPoint(Point(0.3, 0.5))
-//        cell.addVerticalPoint(Point(-0.2, 0.9))
         val imageGraphics = image.createGraphics()
         imageGraphics.color = Color.WHITE
         imageGraphics.fillRect(0, 0, width, height)
@@ -76,13 +60,13 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         // draws the original cell
         g.stroke = BasicStroke(1.0f)
         g.color = Color.LIGHT_GRAY
-        g.drawRect(left+1, top+1, width, boxHeight)
+        g.drawRect(left + 1, top + 1, width, boxHeight)
 
         // draws the cell
         g.stroke = BasicStroke(4.0f)
         g.color = Color.BLACK
-        val scaledHorizontal = cell.horizontal.map { it.scale(width, boxHeight )}
-        val scaledVertical = cell.vertical.map { it.scale(width, boxHeight)}
+        val scaledHorizontal = cell.horizontal.map { it.scale(width, boxHeight) }
+        val scaledVertical = cell.vertical.map { it.scale(width, boxHeight) }
         for (i in 1 until scaledHorizontal.size) {
             val previous = scaledHorizontal[i - 1]
             val current = scaledHorizontal[i]
@@ -115,7 +99,11 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         val size = width / n
         px = (x % size) / size.toDouble()
         py = 1.0 - (y % size) / size.toDouble()
-        movingPoint = cell.addHorizontalPoint(Point(px, py, true))
+        if (px > py) {
+            movingPoint = cell.addHorizontalPoint(Point(px, py, true))
+        } else {
+            movingPoint = cell.addVerticalPoint(Point(px, py, true))
+        }
     }
 
     override fun mouseReleased(e: MouseEvent?) {
@@ -135,8 +123,8 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         val y = e.y
         val size = width / n
         if (movingPoint != null) {
-            movingPoint!!.x =  (x % size) / size.toDouble()
-            movingPoint!!.y =  1.0 - (y % size) / size.toDouble()
+            movingPoint!!.x = (x % size) / size.toDouble()
+            movingPoint!!.y = 1.0 - (y % size) / size.toDouble()
             repaint()
         }
     }
