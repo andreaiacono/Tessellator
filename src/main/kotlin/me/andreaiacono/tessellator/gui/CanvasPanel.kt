@@ -8,15 +8,15 @@ import javax.swing.border.BevelBorder
 
 import java.awt.*
 import java.awt.Color.RED
-import java.awt.event.MouseEvent
-import java.awt.event.MouseMotionListener
-import java.awt.event.MouseListener
+import java.awt.event.*
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_RGB
+import javax.swing.JMenuItem
+import javax.swing.JPopupMenu
 import kotlin.math.min
 
 
-class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotionListener {
+class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListener, MouseMotionListener {
 
     private var thickness: Int = 4
     private var currentX: Int = 0
@@ -29,11 +29,20 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     private var hoveringPixel: Point? = null
     var cell = Cell()
     private val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
+    private val pmMenu = JPopupMenu()
 
     init {
         border = BorderFactory.createBevelBorder(BevelBorder.LOWERED)
         addMouseListener(this)
         addMouseMotionListener(this)
+
+
+        // creates the popup menu
+
+        // creates the popup menu
+        val deletePointMenuItem = JMenuItem("Delete Point")
+        deletePointMenuItem.addActionListener(this)
+        pmMenu.add(deletePointMenuItem)
     }
 
     fun reset() {
@@ -115,6 +124,8 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
             isOnDrawing = true
         } else {
             hoveringPoint = null
+//            if (cell.findNewPointIndex(currentPoint) != null) {
+//                hoveringPixel = currentPoint
             if (color == Color.BLACK) {
                 cursor = Cursor(Cursor.HAND_CURSOR)
                 hoveringPixel = currentPoint
@@ -168,6 +179,9 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     }
 
     override fun mouseClicked(e: MouseEvent?) {
+        if (hoveringPoint != null) {
+            pmMenu.show(e!!.component, e!!.x, e!!.y)
+        }
     }
 
     fun setThickness(value: Int) {
@@ -177,6 +191,11 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
 
     fun setZoom(value: Int) {
         zoom = value;
+        repaint()
+    }
+
+    override fun actionPerformed(e: ActionEvent?) {
+        cell.delete(hoveringPoint!!)
         repaint()
     }
 }
