@@ -50,6 +50,9 @@ class Main(title: String) : JFrame(), ActionListener {
         canvasPanel.setThickness(value)
     }
 
+    fun setZoom(value: Int) {
+        canvasPanel.setZoom(value)
+    }
 }
 
 private fun createAndShowGUI() {

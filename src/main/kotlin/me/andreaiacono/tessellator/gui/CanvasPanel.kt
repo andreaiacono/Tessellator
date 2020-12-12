@@ -25,7 +25,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     private var currentY: Int = 0
     private var drawGrid: Boolean = true
     private var isOnDrawing: Boolean = false
-    private val n = 5
+    private var zoom = 5
     private var changingPoint: Point? = null
     private var hoveringPoint: Point? = null
     private var hoveringPixel: Point? = null
@@ -52,9 +52,10 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
     }
 
     private fun drawCells(g: Graphics2D, canvasWidth: Int, canvasHeight: Int, cell: Cell) {
-        val boxWidth = canvasWidth / n
-        (0..10).forEach { x ->
-            (0..10).forEach { y ->
+        val boxWidth = canvasWidth / zoom
+        cell.setNewSize(boxWidth)
+        (0..zoom).forEach { x ->
+            (0..zoom).forEach { y ->
                 drawCell(g, cell, boxWidth, x * boxWidth, y * boxWidth)
             }
         }
@@ -73,8 +74,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         // draws the cell
         g.stroke = BasicStroke(thickness.toFloat())
         g.color = Color.BLACK
-        val scaledHorizontal = cell.horizontal.map { it.scale(width, boxHeight) }
-        val scaledVertical = cell.vertical.map { it.scale(width, boxHeight) }
+        val scaledHorizontal = cell.points.map { it.scale(width, boxHeight) }
         for (i in 1 until scaledHorizontal.size) {
             val previous = scaledHorizontal[i - 1]
             val current = scaledHorizontal[i]
@@ -85,27 +85,16 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
                 top - current.y
             )
         }
-        for (i in 1 until scaledVertical.size) {
-            val previous = scaledVertical[i - 1]
-            val current = scaledVertical[i]
-            g.drawLine(
-                left - previous.x,
-                top + previous.y,
-                left - current.x,
-                top + current.y
-            )
-        }
-        if (isOnDrawing) {
+        if (hoveringPixel != null) {
+//            println("Hovering pixel  $hoveringPixel")
             g.color = RED
             val rectSize = 5
-            val size = width
-            val px = (currentX % size) / size.toDouble()
-            val py = 1.0 - (currentY % size) / size.toDouble()
-            val scaledPoint = Point(px, py).scale(width, boxHeight)
+            val scaledPoint = hoveringPixel!!.scale(width, boxHeight)
             g.fillRect(left + scaledPoint.x - 2, top - scaledPoint.y - 2, rectSize, rectSize)
         }
 
         if (hoveringPoint != null) {
+//            println("Hovering point  $hoveringPixel")
             val scaledPoint = hoveringPoint!!.scale(width, boxHeight)
             g.color = Color.GREEN
             g.stroke = BasicStroke(2.0f)
@@ -115,13 +104,13 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
         }
     }
 
-
     override fun mouseMoved(e: MouseEvent?) {
         val current = e!!.toCoords()
         val color = Color(image.getRGB(current.x, current.y))
-        val size = width / n
+        val size = width / zoom
         val currentPoint = Point(current, size)
-        val existingPoint = cell.findExistingPoint(currentPoint, width)
+//        println("Current poin: $currentPoint")
+        val existingPoint = cell.findExistingPoint(currentPoint)
         if (existingPoint != null) {
             hoveringPoint = existingPoint
             cursor = Cursor(Cursor.MOVE_CURSOR)
@@ -130,11 +119,12 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
             hoveringPoint = null
             if (color == Color.BLACK) {
                 cursor = Cursor(Cursor.HAND_CURSOR)
-                val pointType = if (currentY % width < currentX % width) VERTICAL else HORIZONTAL
+                val pointType = if (current.x % width < current.y % width) VERTICAL else HORIZONTAL
                 hoveringPixel = currentPoint.copy(pointType = pointType);
-                println(hoveringPixel!!)
+//                println("Hovering $hoveringPixel")
                 isOnDrawing = true
             } else {
+                hoveringPixel = null
                 cursor = Cursor(Cursor.DEFAULT_CURSOR)
                 isOnDrawing = false
             }
@@ -144,7 +134,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
 
     override fun mouseDragged(e: MouseEvent?) {
         val current = e!!.toCoords()
-        val size = width / n
+        val size = width / zoom
         changingPoint?.updatePosition(current, size)
         repaint()
     }
@@ -153,34 +143,25 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
 
         if (isOnDrawing) {
             val current = e!!.toCoords()
-            val size = width / n
-            val existingPoint = cell.findExistingPoint(Point(current, size), width)
+            val size = width / zoom
+            val existingPoint = cell.findExistingPoint(Point(current, size))
             if (existingPoint != null) {
                 changingPoint = existingPoint
             } else {
                 changingPoint = hoveringPixel
-                if (changingPoint!!.pointType == HORIZONTAL) {
-                    cell.addHorizontalPoint(changingPoint!!)
-                } else {
-                    cell.addVerticalPoint(changingPoint!!)
-                }
+                cell.addHorizontalPoint(changingPoint!!)
                 changingPoint!!.isMoving = true
             }
             isOnDrawing = false
         }
     }
 
-    override fun mouseReleased(e: MouseEvent?) {
-//        if (changingPoint != null) {
-//            cell.fixPoint(changingPoint!!)
-//            changingPoint = null
-//            repaint()
-//        }
-    }
-
     fun setDrawGrid(value: Boolean) {
         drawGrid = value;
         repaint()
+    }
+
+    override fun mouseReleased(e: MouseEvent?) {
     }
 
     override fun mouseEntered(e: MouseEvent?) {
@@ -194,6 +175,11 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
 
     fun setThickness(value: Int) {
         thickness = value
+        repaint()
+    }
+
+    fun setZoom(value: Int) {
+        zoom = value;
         repaint()
     }
 }
