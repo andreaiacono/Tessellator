@@ -14,7 +14,7 @@ class ControlsPanel(private val main: Main) : JPanel(), ActionListener, ChangeLi
     }
 
     override fun stateChanged(e: ChangeEvent) {
-        val n = (e.source as JSlider).value
+        main.setThickness((e.source as JSlider).value)
     }
 
     init {
@@ -40,5 +40,23 @@ class ControlsPanel(private val main: Main) : JPanel(), ActionListener, ChangeLi
         sl.putConstraint(SpringLayout.EAST, drawGridCheckbox, -5, SpringLayout.EAST, this)
         sl.putConstraint(SpringLayout.NORTH, drawGridCheckbox, 5, SpringLayout.NORTH, this)
         add(drawGridCheckbox)
+
+        val thicknessLabel = JLabel("Thickness: ")
+        val thicknessSlider = JSlider(JSlider.HORIZONTAL, 1, 10, 4)
+        thicknessSlider.name = "thickness"
+        thicknessSlider.addChangeListener(this)
+        thicknessSlider.paintTicks = true
+        thicknessSlider.paintTrack = true
+        thicknessSlider.paintLabels = true
+//        thicknessSlider.paintLabels = true
+
+        sl.putConstraint(SpringLayout.WEST, thicknessLabel, 5, SpringLayout.WEST, this)
+        sl.putConstraint(SpringLayout.NORTH, thicknessLabel, 40, SpringLayout.SOUTH, drawGridCheckbox)
+
+        sl.putConstraint(SpringLayout.WEST, thicknessSlider, 2, SpringLayout.WEST, this)
+        sl.putConstraint(SpringLayout.EAST, thicknessSlider, -2, SpringLayout.EAST, this)
+        sl.putConstraint(SpringLayout.NORTH, thicknessSlider, 50, SpringLayout.SOUTH, drawGridCheckbox)
+        add(thicknessLabel)
+        add(thicknessSlider)
     }
 }

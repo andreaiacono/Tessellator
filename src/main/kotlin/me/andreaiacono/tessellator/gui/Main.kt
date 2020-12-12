@@ -46,6 +46,10 @@ class Main(title: String) : JFrame(), ActionListener {
         canvasPanel.setDrawGrid(isSet)
     }
 
+    fun setThickness(value: Int) {
+        canvasPanel.setThickness(value)
+    }
+
 }
 
 private fun createAndShowGUI() {
