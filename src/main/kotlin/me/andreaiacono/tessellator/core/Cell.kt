@@ -1,15 +1,13 @@
 package me.andreaiacono.tessellator.core
 
-import me.andreaiacono.tessellator.core.PointType.HORIZONTAL
 import java.text.DecimalFormat
 import kotlin.math.abs
-
 
 class Cell {
 
     var size: Int = 1
     var epsilon: Double = 0.1
-    var points = mutableListOf(Point(0.0, 0.0, HORIZONTAL), Point(1.0, 0.0, HORIZONTAL), Point(1.0, 1.0, HORIZONTAL))
+    var points = mutableListOf(Point(0.0, 0.0), Point(1.0, 0.0), Point(1.0, 1.0))
 
     fun findExistingPoint(searchedPoint: Point): Point? {
         points.filter { (abs(it.x - searchedPoint.x) < epsilon && abs(it.y - searchedPoint.y) < epsilon) }
@@ -63,13 +61,9 @@ class Cell {
 }
 
 data class ScaledPoint(val x: Int, val y: Int)
-enum class PointType {
-    HORIZONTAL, VERTICAL
-}
-
-data class Point(var x: Double, var y: Double, val pointType: PointType? = null, var isMoving: Boolean = false) {
+data class Point(var x: Double, var y: Double, var isMoving: Boolean = false) {
     val dec = DecimalFormat("#.####")
-    override fun toString(): String = "[${pointType.toString()[0]}(${dec.format(x)}, ${dec.format(y)}]"
+    override fun toString(): String = "(${dec.format(x)}, ${dec.format(y)})"
 
     constructor(coords: Coords, size: Int) : this(
         (coords.x % size) / size.toDouble(),
@@ -78,13 +72,8 @@ data class Point(var x: Double, var y: Double, val pointType: PointType? = null,
 }
 
 fun Point.updatePosition(coords: Coords, size: Int) {
-    if (this.pointType == HORIZONTAL) {
-        this.x = (coords.x % size) / size.toDouble()
-        this.y = 1.0 - (coords.y % size) / size.toDouble()
-    } else {
-        this.x = 1.0 - (coords.x % size) / size.toDouble()
-        this.y = (coords.y % size) / size.toDouble()
-    }
+    this.x = (coords.x % size) / size.toDouble()
+    this.y = 1.0 - (coords.y % size) / size.toDouble()
 }
 
 fun Point.scale(width: Int, height: Int): ScaledPoint = ScaledPoint((this.x * width).toInt(), (this.y * height).toInt())

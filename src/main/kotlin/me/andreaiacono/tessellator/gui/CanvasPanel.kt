@@ -2,8 +2,6 @@ package me.andreaiacono.tessellator.gui
 
 import me.andreaiacono.tessellator.core.*
 import me.andreaiacono.tessellator.core.Point
-import me.andreaiacono.tessellator.core.PointType.HORIZONTAL
-import me.andreaiacono.tessellator.core.PointType.VERTICAL
 import javax.swing.BorderFactory
 import javax.swing.JPanel
 import javax.swing.border.BevelBorder
@@ -119,8 +117,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, MouseMotion
             hoveringPoint = null
             if (color == Color.BLACK) {
                 cursor = Cursor(Cursor.HAND_CURSOR)
-                val pointType = if (current.x % width < current.y % width) VERTICAL else HORIZONTAL
-                hoveringPixel = currentPoint.copy(pointType = pointType);
+                hoveringPixel = currentPoint
 //                println("Hovering $hoveringPixel")
                 isOnDrawing = true
             } else {
