@@ -1,8 +1,10 @@
 package me.andreaiacono.tessellator.core
 
+import kotlinx.serialization.Serializable
 import kotlin.math.abs
 import kotlin.math.sqrt
 
+@Serializable
 class Cell {
 
     var size: Int = 1

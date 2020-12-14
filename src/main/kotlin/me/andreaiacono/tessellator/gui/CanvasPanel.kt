@@ -21,19 +21,19 @@ import java.util.Queue
 
 class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListener, MouseMotionListener {
 
-    private var drawColors: Boolean = true
+    var drawColors: Boolean = true
     private var thickness: Int = 4
     private var currentX: Int = 0
     private var currentY: Int = 0
-    private var drawGrid: Boolean = true
+    var drawGrid: Boolean = true
     private var isOnDrawing: Boolean = false
-    private var zoom = 5
+    var zoom = 5
     private var startingingCoords: Coords? = null
     private var changingPoint: Point? = null
     private var hoveringPoint: Point? = null
     private var hoveringPixel: Point? = null
     var cell = Cell()
-    private val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
+    val image = BufferedImage(4000, 4000, TYPE_INT_RGB)
     private val pmMenu = JPopupMenu()
 
     init {
@@ -213,12 +213,12 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         }
     }
 
-    fun setDrawGrid(value: Boolean) {
+    fun setDrawGridCheckbox(value: Boolean) {
         drawGrid = value
         repaint()
     }
 
-    fun setDrawColors(value: Boolean) {
+    fun setDrawColorsCheckbox(value: Boolean) {
         drawColors = value
         repaint()
     }
@@ -244,7 +244,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         repaint()
     }
 
-    fun setZoom(value: Int) {
+    fun setZoomValue(value: Int) {
         zoom = value
         repaint()
     }

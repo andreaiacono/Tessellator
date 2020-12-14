@@ -1,10 +1,9 @@
 package me.andreaiacono.tessellator.core
 
-import java.text.DecimalFormat
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Point(var x: Double, var y: Double, var isMoving: Boolean = false) {
-    val dec = DecimalFormat("#.####")
-    override fun toString(): String = "(${dec.format(x)}, ${dec.format(y)})"
 
     constructor(coords: Coords, size: Int) : this(
         (coords.x % size) / size.toDouble(),
