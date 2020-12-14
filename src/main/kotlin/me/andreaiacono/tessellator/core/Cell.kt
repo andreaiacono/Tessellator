@@ -2,6 +2,7 @@ package me.andreaiacono.tessellator.core
 
 import java.text.DecimalFormat
 import kotlin.math.abs
+import kotlin.math.sqrt
 
 class Cell {
 
@@ -10,7 +11,7 @@ class Cell {
     var points = mutableListOf(Point(0.0, 0.0), Point(1.0, 0.0), Point(1.0, 1.0))
 
     fun findExistingPoint(searchedPoint: Point): Point? {
-        points.filter { (abs(it.x - searchedPoint.x) < epsilon * 4 && abs(it.y - searchedPoint.y) < epsilon * 4)  }
+        points.filter { (abs(it.x - searchedPoint.x) < epsilon && abs(it.y - searchedPoint.y) < epsilon) }
             .firstOrNull()
             ?.let {
                 return it
@@ -19,28 +20,18 @@ class Cell {
     }
 
     fun areInline(a: Point, b: Point, c: Point): Boolean {
-
-        // vertical
-        if (areEqual(a.x, c.x)) {
-            return areEqual(b.x, c.x)
-        }
-
-        // horizontal
-        if (areEqual(a.y, c.y)) {
-            return areEqual(b.y, c.y)
-        }
-
-        // match the gradients
-        return areEqual((a.x - c.x) * (a.y - c.y), (c.x - b.x) * (c.y - b.y))
+        return areEqual(distance(a, b) + distance(b, c), distance(a, c))
     }
 
-    fun areEqual(a: Double, b: Double): Boolean {
-        return abs(a - b) < (epsilon * 4)
+    fun distance(a: Point, b: Point): Double = sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) )
+
+    private fun areEqual(a: Double, b: Double): Boolean {
+        return abs(a - b) < (epsilon)
     }
 
     fun findNewPointIndex(point: Point): Int? {
         for (i in 1 until points.size) {
-            if (areInline(point, points[i - 1], points[i])) {
+            if (areInline(points[i - 1], point, points[i])) {
                 return i
             }
         }
@@ -48,10 +39,8 @@ class Cell {
     }
 
     fun addHorizontalPoint(newPoint: Point) {
-        println("before adding $newPoint to $points")
         val index = findNewPointIndex(newPoint) ?: throw Exception("Trying to add a new point not part of a line")
         points.add(index, newPoint)
-        println("after adding $points")
     }
 
     fun setNewSize(size: Int) {
@@ -60,7 +49,7 @@ class Cell {
     }
 
     fun delete(point: Point) {
-        points.filter { (abs(it.x - point.x) < epsilon && abs(it.y - point.y) < epsilon)  }
+        points.filter { (abs(it.x - point.x) < epsilon && abs(it.y - point.y) < epsilon) }
             .firstOrNull()
             ?.let {
                 points.remove(it)

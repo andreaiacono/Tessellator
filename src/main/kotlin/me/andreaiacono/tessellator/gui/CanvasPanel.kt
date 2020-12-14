@@ -56,7 +56,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val imageGraphics = image.createGraphics()
-        imageGraphics.color = Color.WHITE
+        imageGraphics.color = WHITE
         imageGraphics.fillRect(0, 0, width, height)
         drawCells(imageGraphics as Graphics2D, size.width, size.height, cell)
         g.drawImage(image, 0, 0, null)
@@ -71,13 +71,13 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
             (0..zoom).forEach { x ->
                 (0..zoom).forEach { y ->
                     g.stroke = BasicStroke(1.0f)
-                    g.color = Color.LIGHT_GRAY
+                    g.color = LIGHT_GRAY
                     g.drawRect(x * boxWidth, y * boxWidth, width, width)
                 }
             }
         }
 
-        // draws the cells
+        // draws the lines
         (0..zoom).forEach { x ->
             (0..zoom).forEach { y ->
                 drawCell(g, cell, boxWidth, x * boxWidth, y * boxWidth)
@@ -101,7 +101,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
 
         // draws the cell
         g.stroke = BasicStroke(thickness.toFloat())
-        g.color = Color.BLACK
+        g.color = BLACK
         val scaledHorizontal = cell.points.map { it.scale(width, boxHeight) }
         for (i in 1 until scaledHorizontal.size) {
             val previous = scaledHorizontal[i - 1]
@@ -124,7 +124,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         if (hoveringPoint != null) {
 //            println("Hovering point  $hoveringPixel")
             val scaledPoint = hoveringPoint!!.scale(width, boxHeight)
-            g.color = Color.GREEN
+            g.color = GREEN
             g.stroke = BasicStroke(2.0f)
             val circleSize = min(width / 5, 20)
             val halfCircleSize = circleSize / 2
@@ -165,10 +165,8 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
 
     override fun mouseMoved(e: MouseEvent?) {
         val current = e!!.toCoords()
-        val color = Color(image.getRGB(current.x, current.y))
         val size = width / zoom
         val currentPoint = Point(current, size)
-//        println("Current poin: $currentPoint")
         val existingPoint = cell.findExistingPoint(currentPoint)
         if (existingPoint != null) {
             hoveringPoint = existingPoint
@@ -176,12 +174,9 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
             isOnDrawing = true
         } else {
             hoveringPoint = null
-//            if (cell.findNewPointIndex(currentPoint) != null) {
-//                hoveringPixel = currentPoint
-            if (color == Color.BLACK) {
+            if (cell.findNewPointIndex(currentPoint) != null) {
                 cursor = Cursor(Cursor.HAND_CURSOR)
                 hoveringPixel = currentPoint
-//                println("Hovering $hoveringPixel")
                 isOnDrawing = true
             } else {
                 hoveringPixel = null
@@ -217,12 +212,12 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     }
 
     fun setDrawGrid(value: Boolean) {
-        drawGrid = value;
+        drawGrid = value
         repaint()
     }
 
     fun setDrawColors(value: Boolean) {
-        drawColors = value;
+        drawColors = value
         repaint()
     }
 
@@ -237,7 +232,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
 
     override fun mouseClicked(e: MouseEvent?) {
         if (hoveringPoint != null) {
-            pmMenu.show(e!!.component, e!!.x, e!!.y)
+            pmMenu.show(e!!.component, e.x, e.y)
         }
     }
 
@@ -247,7 +242,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     }
 
     fun setZoom(value: Int) {
-        zoom = value;
+        zoom = value
         repaint()
     }
 
