@@ -44,6 +44,15 @@ class ControlsPanel(private val main: Main) : JPanel(), ActionListener, ChangeLi
         sl.putConstraint(SpringLayout.NORTH, drawGridCheckbox, 5, SpringLayout.NORTH, this)
         add(drawGridCheckbox)
 
+        val drawcolorsCheckbox = JCheckBox("Draw colors", true)
+        drawcolorsCheckbox.addActionListener {
+            main.setDrawColors((it.source as JCheckBox).isSelected)
+        }
+        sl.putConstraint(SpringLayout.WEST, drawcolorsCheckbox, 5, SpringLayout.WEST, this)
+        sl.putConstraint(SpringLayout.EAST, drawcolorsCheckbox, -5, SpringLayout.EAST, this)
+        sl.putConstraint(SpringLayout.NORTH, drawcolorsCheckbox, 5, SpringLayout.SOUTH, drawGridCheckbox)
+        add(drawcolorsCheckbox)
+
         val thicknessLabel = JLabel("Line Thickness: ")
         val thicknessSlider = JSlider(JSlider.HORIZONTAL, 1, 10, 4)
         thicknessSlider.name = "thickness"
@@ -53,16 +62,16 @@ class ControlsPanel(private val main: Main) : JPanel(), ActionListener, ChangeLi
         thicknessSlider.paintLabels = true
 
         sl.putConstraint(SpringLayout.WEST, thicknessLabel, 5, SpringLayout.WEST, this)
-        sl.putConstraint(SpringLayout.NORTH, thicknessLabel, 40, SpringLayout.SOUTH, drawGridCheckbox)
+        sl.putConstraint(SpringLayout.NORTH, thicknessLabel, 40, SpringLayout.SOUTH, drawcolorsCheckbox)
 
         sl.putConstraint(SpringLayout.WEST, thicknessSlider, 2, SpringLayout.WEST, this)
         sl.putConstraint(SpringLayout.EAST, thicknessSlider, -2, SpringLayout.EAST, this)
-        sl.putConstraint(SpringLayout.NORTH, thicknessSlider, 50, SpringLayout.SOUTH, drawGridCheckbox)
+        sl.putConstraint(SpringLayout.NORTH, thicknessSlider, 50, SpringLayout.SOUTH, drawcolorsCheckbox)
         add(thicknessLabel)
         add(thicknessSlider)
 
         val zoomLabel = JLabel("Zoom: ")
-        val zoomSlider = JSlider(JSlider.HORIZONTAL, 2, 50, 5)
+        val zoomSlider = JSlider(JSlider.HORIZONTAL, 2, 20, 5)
         zoomSlider.name = "zoom"
         zoomSlider.addChangeListener(this)
         zoomSlider.paintTicks = true

@@ -7,17 +7,21 @@ import javax.swing.JPanel
 import javax.swing.border.BevelBorder
 
 import java.awt.*
-import java.awt.Color.RED
+import java.awt.Color.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
 import java.awt.image.BufferedImage.TYPE_INT_RGB
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
 import kotlin.math.min
+import java.util.LinkedList
+
+import java.util.Queue
 
 
 class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListener, MouseMotionListener {
 
+    private var drawColors: Boolean = true
     private var thickness: Int = 4
     private var currentX: Int = 0
     private var currentY: Int = 0
@@ -61,22 +65,39 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     private fun drawCells(g: Graphics2D, canvasWidth: Int, canvasHeight: Int, cell: Cell) {
         val boxWidth = canvasWidth / zoom
         cell.setNewSize(boxWidth)
+
+        // draws the grid
+        if (drawGrid) {
+            (0..zoom).forEach { x ->
+                (0..zoom).forEach { y ->
+                    g.stroke = BasicStroke(1.0f)
+                    g.color = Color.LIGHT_GRAY
+                    g.drawRect(x * boxWidth, y * boxWidth, width, width)
+                }
+            }
+        }
+
+        // draws the cells
         (0..zoom).forEach { x ->
             (0..zoom).forEach { y ->
                 drawCell(g, cell, boxWidth, x * boxWidth, y * boxWidth)
+            }
+        }
+
+        // colors the shapes
+        if (drawColors) {
+            (0..zoom).forEach { x ->
+                (0..zoom).forEach { y ->
+                    if ((x % 2 == 0 && y % 2 == 0) || (x % 2 == 1 && y % 2 == 1) ) {
+                        floodFill(g, ScaledPoint((x) * boxWidth - boxWidth / 2, y * boxWidth + boxWidth / 2), boxWidth)
+                    }
+                }
             }
         }
     }
 
     private fun drawCell(g: Graphics2D, cell: Cell, width: Int, left: Int, top: Int) {
         val boxHeight = width
-
-        // draws the original cell
-        if (drawGrid) {
-            g.stroke = BasicStroke(1.0f)
-            g.color = Color.LIGHT_GRAY
-            g.drawRect(left + 1, top + 1, width, boxHeight)
-        }
 
         // draws the cell
         g.stroke = BasicStroke(thickness.toFloat())
@@ -108,6 +129,37 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
             val circleSize = min(width / 5, 20)
             val halfCircleSize = circleSize / 2
             g.drawArc(left + scaledPoint.x - halfCircleSize, top - scaledPoint.y - halfCircleSize, circleSize, circleSize, 0, 360)
+        }
+    }
+
+    private fun floodFill(g: Graphics2D, point: ScaledPoint, boxWidth: Int) {
+        val queue: Queue<ScaledPoint> = LinkedList()
+        val coloured: MutableSet<ScaledPoint> = mutableSetOf()
+        queue.add(point)
+        coloured.add(point)
+        g.stroke = BasicStroke(1.0f)
+        g.color = GRAY
+        val maxPixels = boxWidth * boxWidth * 2
+        while (queue.size > 0) {
+            val current: ScaledPoint = queue.poll()
+            g.drawLine(current.x, current.y, current.x, current.y)
+            if (coloured.size > maxPixels) {
+                return
+            }
+            Neighbours.values().forEach { coords ->
+                val neighbour = ScaledPoint(current.x + coords.x, current.y + coords.y)
+
+                if (neighbour !in coloured &&
+                    neighbour.y >= 0 && neighbour.y < height &&
+                    neighbour.x >= 0 && neighbour.x < width
+                ) {
+                    val color = Color(image.getRGB(neighbour.x, neighbour.y))
+                    if (color == WHITE || color == LIGHT_GRAY) {
+                        coloured.add(neighbour)
+                        queue.add(neighbour)
+                    }
+                }
+            }
         }
     }
 
@@ -169,6 +221,11 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         repaint()
     }
 
+    fun setDrawColors(value: Boolean) {
+        drawColors = value;
+        repaint()
+    }
+
     override fun mouseReleased(e: MouseEvent?) {
     }
 
@@ -198,4 +255,11 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         cell.delete(hoveringPoint!!)
         repaint()
     }
+}
+
+enum class Neighbours(val x: Int, val y: Int) {
+    UP(0, -1),
+    DOWN(0, 1),
+    LEFT(-1, 0),
+    RIGHT(1, 0)
 }

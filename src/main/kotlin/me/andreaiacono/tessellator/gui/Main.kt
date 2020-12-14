@@ -53,6 +53,10 @@ class Main(title: String) : JFrame(), ActionListener {
     fun setZoom(value: Int) {
         canvasPanel.setZoom(value)
     }
+
+    fun setDrawColors(isSet: Boolean) {
+        canvasPanel.setDrawColors(isSet)
+    }
 }
 
 private fun createAndShowGUI() {
