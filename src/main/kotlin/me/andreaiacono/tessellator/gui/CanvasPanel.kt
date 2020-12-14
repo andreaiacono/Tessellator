@@ -28,6 +28,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     private var drawGrid: Boolean = true
     private var isOnDrawing: Boolean = false
     private var zoom = 5
+    private var startingingCoords: Coords? = null
     private var changingPoint: Point? = null
     private var hoveringPoint: Point? = null
     private var hoveringPixel: Point? = null
@@ -113,16 +114,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
                 top - current.y
             )
         }
-        if (hoveringPixel != null) {
-//            println("Hovering pixel  $hoveringPixel")
-            g.color = RED
-            val rectSize = 5
-            val scaledPoint = hoveringPixel!!.scale(width, boxHeight)
-            g.fillRect(left + scaledPoint.x - 2, top - scaledPoint.y - 2, rectSize, rectSize)
-        }
-
         if (hoveringPoint != null) {
-//            println("Hovering point  $hoveringPixel")
             val scaledPoint = hoveringPoint!!.scale(width, boxHeight)
             g.color = GREEN
             g.stroke = BasicStroke(2.0f)
@@ -130,6 +122,13 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
             val halfCircleSize = circleSize / 2
             g.drawArc(left + scaledPoint.x - halfCircleSize, top - scaledPoint.y - halfCircleSize, circleSize, circleSize, 0, 360)
         }
+        else if (hoveringPixel != null) {
+            g.color = RED
+            val rectSize = 5
+            val scaledPoint = hoveringPixel!!.scale(width, boxHeight)
+            g.fillRect(left + scaledPoint.x - 2, top - scaledPoint.y - 2, rectSize, rectSize)
+        }
+
     }
 
     private fun floodFill(g: Graphics2D, point: ScaledPoint, boxWidth: Int) {
@@ -190,8 +189,10 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     override fun mouseDragged(e: MouseEvent?) {
         val current = e!!.toCoords()
         val size = width / zoom
-        changingPoint?.updatePosition(current, size)
-        repaint()
+        if (startingingCoords != null) {
+            changingPoint?.updatePosition(current, startingingCoords!!, size)
+            repaint()
+        }
     }
 
     override fun mousePressed(e: MouseEvent?) {
@@ -207,6 +208,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
                 cell.addHorizontalPoint(changingPoint!!)
                 changingPoint!!.isMoving = true
             }
+            startingingCoords = current
             isOnDrawing = false
         }
     }
@@ -222,6 +224,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     }
 
     override fun mouseReleased(e: MouseEvent?) {
+        startingingCoords = null
     }
 
     override fun mouseEntered(e: MouseEvent?) {

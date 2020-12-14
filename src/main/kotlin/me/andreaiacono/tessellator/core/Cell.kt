@@ -67,12 +67,11 @@ data class Point(var x: Double, var y: Double, var isMoving: Boolean = false) {
         1.0 - (coords.y % size) / size.toDouble()
     )
 
-    fun updatePosition(coords: Coords, size: Int) {
-        x = (coords.x % size) / size.toDouble()
-        y = 1.0 - (coords.y % size) / size.toDouble()
+    fun updatePosition(current: Coords, starting: Coords, size: Int) {
+        x = (starting.x %size) / size.toDouble() + (((current.x - starting.x))) / size.toDouble()
+        y = 1.0 - (starting.y %size) / size.toDouble() - (((current.y - starting.y))) / size.toDouble()
     }
 }
-
 
 fun Point.scale(width: Int, height: Int): ScaledPoint = ScaledPoint((this.x * width).toInt(), (this.y * height).toInt())
 
