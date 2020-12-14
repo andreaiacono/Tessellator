@@ -5,7 +5,12 @@ import java.awt.BorderLayout
 import java.awt.EventQueue
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.KeyEvent
+import java.net.URL
 import javax.swing.*
+import javax.swing.JMenuItem
+import javax.swing.JMenu
+import javax.swing.JMenuBar
 
 class Main(title: String) : JFrame(), ActionListener {
 
@@ -28,6 +33,43 @@ class Main(title: String) : JFrame(), ActionListener {
         divider.resizeWeight = 0.85
         add(divider, BorderLayout.CENTER)
         isVisible = true
+
+        val imageURL: URL = Main::class.java.getResource("/tessellator.png")
+        iconImage = ImageIcon(imageURL, "Tessellator Icon").image
+
+        jMenuBar = createMenus()
+    }
+
+    private fun createMenus() : JMenuBar {
+
+        val menuBar = JMenuBar()
+        val fileMenu = JMenu("File")
+        fileMenu.mnemonic = KeyEvent.VK_F
+
+        val openItem = JMenuItem("Open")
+        openItem.mnemonic = KeyEvent.VK_O
+        fileMenu.add(openItem)
+
+        val saveItem = JMenuItem("Save")
+        saveItem.mnemonic = KeyEvent.VK_S
+        fileMenu.add(saveItem)
+        fileMenu.add(JSeparator())
+        val quitItem = JMenuItem("Quit")
+        quitItem.mnemonic = KeyEvent.VK_Q
+        quitItem.addActionListener {
+            this.dispose()
+        }
+        fileMenu.add(quitItem)
+        menuBar.add(fileMenu)
+
+        val toolsMenu = JMenu("Tools")
+        toolsMenu.mnemonic = KeyEvent.VK_T;
+        val exportItem = JMenuItem("Export as PNG")
+        exportItem.mnemonic = KeyEvent.VK_E
+        toolsMenu.add(exportItem)
+        menuBar.add(toolsMenu)
+
+        return menuBar
     }
 
     fun resetCanvas() {
