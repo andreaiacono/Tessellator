@@ -5,6 +5,7 @@ import me.andreaiacono.tessellator.core.FileData
 import me.andreaiacono.tessellator.core.deserialize
 import me.andreaiacono.tessellator.core.serialize
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Cursor
 import java.awt.EventQueue
 import java.awt.event.ActionEvent
@@ -29,7 +30,7 @@ class Main(title: String) : JFrame(), ActionListener {
     private val defaultCursor = Cursor.DEFAULT_CURSOR
 
     init {
-        setSize(750, 627)
+        setSize(800, 650)
         setTitle(title)
         defaultCloseOperation = EXIT_ON_CLOSE
         try {
@@ -40,7 +41,7 @@ class Main(title: String) : JFrame(), ActionListener {
         controlsPanel = ControlsPanel(this)
         canvasPanel = CanvasPanel(this)
         val divider = JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvasPanel, controlsPanel)
-        divider.resizeWeight = 0.85
+        divider.resizeWeight = 0.80
         add(divider, BorderLayout.CENTER)
         isVisible = true
 
@@ -66,6 +67,9 @@ class Main(title: String) : JFrame(), ActionListener {
                 canvasPanel.setDrawColorsCheckbox(fileData.drawColor)
                 canvasPanel.setDrawGridCheckbox(fileData.drawGrid)
                 canvasPanel.setZoomValue(fileData.zoom)
+                canvasPanel.setLineThickness(fileData.lineThickness)
+                canvasPanel.color1 = Color(fileData.color1)
+                canvasPanel.color2 = Color(fileData.color2)
             }
             repaint()
         }
@@ -74,7 +78,15 @@ class Main(title: String) : JFrame(), ActionListener {
         saveItem.mnemonic = KeyEvent.VK_S
         fileMenu.add(saveItem)
         saveItem.addActionListener {
-            val fileData = FileData(canvasPanel.cell, canvasPanel.zoom, canvasPanel.drawGrid, canvasPanel.drawColors)
+            val fileData = FileData(
+                canvasPanel.cell,
+                canvasPanel.zoom,
+                canvasPanel.thickness,
+                canvasPanel.drawGrid,
+                canvasPanel.drawColors,
+                canvasPanel.color1.rgb,
+                canvasPanel.color2.rgb
+            )
             saveFile(fileData.serialize())
         }
 
@@ -184,7 +196,7 @@ class Main(title: String) : JFrame(), ActionListener {
     }
 
     fun setThickness(value: Int) {
-        canvasPanel.setThickness(value)
+        canvasPanel.setLineThickness(value)
     }
 
     fun setZoom(value: Int) {
@@ -193,6 +205,16 @@ class Main(title: String) : JFrame(), ActionListener {
 
     fun setDrawColors(isSet: Boolean) {
         canvasPanel.setDrawColorsCheckbox(isSet)
+        repaint()
+    }
+
+    fun setColor1(color1: Color) {
+        canvasPanel.color1 = color1
+        repaint()
+    }
+    fun setColor2(color2: Color) {
+        canvasPanel.color2 = color2
+        repaint()
     }
 }
 

@@ -21,8 +21,10 @@ import java.util.Queue
 
 class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListener, MouseMotionListener {
 
+    var color1: Color = WHITE
+    var color2: Color = GRAY
     var drawColors: Boolean = true
-    private var thickness: Int = 4
+    var thickness: Int = 4
     private var currentX: Int = 0
     private var currentY: Int = 0
     var drawGrid: Boolean = true
@@ -41,9 +43,6 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         addMouseListener(this)
         addMouseMotionListener(this)
 
-
-        // creates the popup menu
-
         // creates the popup menu
         val deletePointMenuItem = JMenuItem("Delete Point")
         deletePointMenuItem.addActionListener(this)
@@ -57,7 +56,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
         val imageGraphics = image.createGraphics()
-        imageGraphics.color = WHITE
+        imageGraphics.color = color1
         imageGraphics.fillRect(0, 0, width, height)
         drawCells(imageGraphics as Graphics2D, size.width, size.height, cell)
         g.drawImage(image, 0, 0, null)
@@ -127,6 +126,9 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
             val rectSize = 5
             val scaledPoint = hoveringPixel!!.scale(width, boxHeight)
             g.fillRect(left + scaledPoint.x - 2, top - scaledPoint.y - 2, rectSize, rectSize)
+            val circleSize = min(width / 10, 20)
+            val halfCircleSize = circleSize / 2
+            g.drawArc(left + scaledPoint.x - halfCircleSize, top - scaledPoint.y - halfCircleSize, circleSize, circleSize, 0, 360)
         }
 
     }
@@ -137,7 +139,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         queue.add(point)
         coloured.add(point)
         g.stroke = BasicStroke(1.0f)
-        g.color = GRAY
+        g.color = color2
         val maxPixels = boxWidth * boxWidth * 2
         while (queue.size > 0) {
             val current: ScaledPoint = queue.poll()
@@ -153,7 +155,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
                     neighbour.x >= 0 && neighbour.x < width
                 ) {
                     val color = Color(image.getRGB(neighbour.x, neighbour.y))
-                    if (color == WHITE || color == LIGHT_GRAY) {
+                    if (color == color1 || color == LIGHT_GRAY) {
                         coloured.add(neighbour)
                         queue.add(neighbour)
                     }
@@ -173,7 +175,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
             isOnDrawing = true
         } else {
             hoveringPoint = null
-            if (cell.findNewPointIndex(currentPoint) != null) {
+            if (cell.findNewPointIndex(currentPoint.scale(size, size), size) != null) {
                 cursor = Cursor(Cursor.HAND_CURSOR)
                 hoveringPixel = currentPoint
                 isOnDrawing = true
@@ -205,7 +207,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
                 changingPoint = existingPoint
             } else {
                 changingPoint = hoveringPixel
-                cell.addHorizontalPoint(changingPoint!!)
+                cell.addHorizontalPoint(changingPoint!!, size)
                 changingPoint!!.isMoving = true
             }
             startingingCoords = current
@@ -239,7 +241,7 @@ class CanvasPanel(private val main: Main) : JPanel(), MouseListener, ActionListe
         }
     }
 
-    fun setThickness(value: Int) {
+    fun setLineThickness(value: Int) {
         thickness = value
         repaint()
     }

@@ -12,6 +12,6 @@ internal class CellTest {
     @Test
     fun addVerticalPoint() {
         val cell = Cell()
-        assertEquals(2, cell.points.size)
+        assertEquals(3, cell.points.size)
     }
 }
